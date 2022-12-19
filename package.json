@@ -1,0 +1,22 @@
+{
+  "name": "spruce",
+  "version": "2.0.5",
+  "description": "",
+  "main": "node src/bot.js",
+  "scripts": {
+    "test": "node src/bot.js",
+    "buildTestCommands": "node bin/client/deployTestCommands",
+    "buildGuildCommands": "node bin/client/deployCommands"
+  },
+  "author": "Joseph Gross",
+  "license": "ISC",
+  "dependencies": {
+    "@discordjs/rest": "^1.3.0",
+    "dayjs": "^1.11.6",
+    "discord.js": "^14.6.0",
+    "dotenv": "^16.0.3",
+    "mysql2": "^2.3.3",
+    "numeral": "^2.0.6",
+    "sequelize": "^6.25.3"
+  }
+}
