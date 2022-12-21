@@ -6,7 +6,9 @@
   "scripts": {
     "test": "node src/bot.js",
     "buildTestCommands": "node bin/client/deployTestCommands",
-    "buildGuildCommands": "node bin/client/deployCommands"
+    "buildGuildCommands": "node bin/client/deployCommands",
+    "forceBuildDatabase": "node bin/database/dbInit --f",
+    "buildDatabase": "node bin/database/dbInit"
   },
   "author": "Joseph Gross",
   "license": "ISC",
