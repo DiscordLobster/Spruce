@@ -10,6 +10,7 @@ const {
 module.exports = {
   category: 'General',
   args: '(command)',
+  example: '/help help',
   data: new SlashCommandBuilder()
     .setName('help')
     .setDescription('View a list of commands or information about a single command')
@@ -27,7 +28,7 @@ module.exports = {
 
       const embed = new EmbedBuilder()
         .setTitle(`/${command.data.name} ${command.args ?? ''}`)
-        .setDescription(`${command.data.description}`)
+        .setDescription(`${command.data.description}\n\nExample: \`${command.example ?? ''}\``)
         .setFooter({ text: `${command.category}` });
 
       return await interaction.reply({ embeds: [embed], ephemeral: true });
