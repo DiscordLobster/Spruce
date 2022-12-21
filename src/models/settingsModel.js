@@ -8,5 +8,7 @@ module.exports = (sequelize, DataTypes) => {
     member_logs: DataTypes.STRING,
     channel_logs: DataTypes.STRING,
     message_logs: DataTypes.STRING,
+    update_channel: DataTypes.STRING,
+    ticket_logs: DataTypes.STRING,
   });
 }
