@@ -1,6 +1,7 @@
 const { Warnings } = require('../objects/dbObjects');
 const dayjs = require('dayjs');
 const { createWriteStream } = require('fs');
+const { EmbedBuilder } = require('discord.js');
 const logger = createWriteStream('./src/logs/warnings.log', { flags: 'a' });
 
 module.exports = (collection) => {
@@ -8,14 +9,14 @@ module.exports = (collection) => {
     value: async (offender, moderator, reason) => {
       const dateFormat = dayjs(Date.now()).format('YYYY-MM-DD hh:mm:ss');
       let warning = await Warnings.create({
-        offender: offender,
-        moderator: moderator,
+        offender: offender.id,
+        moderator: moderator.id,
         reason: reason,
       });
 
       warning = await collection._sync(warning.id);
 
-      logger.write(`[${dateFormat}] Added new warning for ${offender} with reason: ${reason} by moderator: ${moderator}`);
+      logger.write(`[${dateFormat}] Added new warning for ${offender.user.tag} with reason: ${reason} by moderator: ${moderator.user.tag}\n`);
 
       return warning;
     }
@@ -105,6 +106,14 @@ module.exports = (collection) => {
       warnings.forEach(key => collection.set(key.id, key));
 
       return collection.size;
+    }
+  });
+
+  Reflect.defineProperty(collection, 'calculatePages', {
+    value: async (data, dataPerPage) => {
+      var pages = [];
+
+      return pages;
     }
   });
 }
