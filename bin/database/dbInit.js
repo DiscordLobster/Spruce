@@ -14,6 +14,7 @@ require('../../src/models/settingsModel')(sequelize, Sequelize.DataTypes);
 require('../../src/models/warningModel')(sequelize, Sequelize.DataTypes);
 require('../../src/models/banModel')(sequelize, Sequelize.DataTypes);
 require('../../src/models/muteModel')(sequelize, Sequelize.DataTypes);
+require('../../src/models/updateModel')(sequelize, Sequelize.DataTypes);
 
 const force = process.argv.includes('force') || process.argv.includes('--f');
 

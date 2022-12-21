@@ -3,7 +3,7 @@ require('dotenv').config();
 const Embeds = require('./utilities/Embeds');
 const { Client, Collection, GatewayIntentBits } = require('discord.js');
 const { readdirSync } = require('fs');
-const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildBans, GatewayIntentBits.GuildEmojisAndStickers] });
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildBans, GatewayIntentBits.GuildEmojisAndStickers, GatewayIntentBits.MessageContent, GatewayIntentBits.DirectMessages] });
 
 client.commands = new Collection();
 client.devCommands = new Collection();
@@ -12,6 +12,7 @@ client.buttons = new Collection();
 client.menus = new Collection();
 client.modals = new Collection();
 client.embeds = Embeds;
+client.updates = new Collection();
 
 client.botSettings = new Collection();
 client.modWarnings = new Collection();

@@ -14,6 +14,7 @@ const Settings = require('../models/settingsModel')(sequelize, Sequelize.DataTyp
 const Warnings = require('../models/warningModel')(sequelize, Sequelize.DataTypes);
 const Bans = require('../models/banModel')(sequelize, Sequelize.DataTypes);
 const Mutes = require('../models/muteModel')(sequelize, Sequelize.DataTypes);
+const Updates = require('../models/updateModel')(sequelize, Sequelize.DataTypes);
 
 // Create any associations
 
@@ -24,4 +25,5 @@ module.exports = {
   Warnings,
   Bans,
   Mutes,
+  Updates,
 };
