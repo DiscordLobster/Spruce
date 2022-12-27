@@ -3,9 +3,10 @@ require('dotenv').config();
 const Embeds = require('./utilities/Embeds');
 const { Client, Collection, GatewayIntentBits } = require('discord.js');
 const { readdirSync } = require('fs');
-const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildBans, GatewayIntentBits.GuildEmojisAndStickers, GatewayIntentBits.MessageContent, GatewayIntentBits.DirectMessages] });
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildBans, GatewayIntentBits.GuildEmojisAndStickers, GatewayIntentBits.MessageContent, GatewayIntentBits.DirectMessages, GatewayIntentBits.GuildMessages] });
 
 client.commands = new Collection();
+client.prefixCmds = new Collection();
 client.devCommands = new Collection();
 client.events = new Collection();
 client.buttons = new Collection();
@@ -48,5 +49,6 @@ for (const folder of functionFolders) {
 
 client.syncCommands();
 client.handleEvents();
+client.handlePrefixCommands();
 client.syncComponents();
 client.login(process.env.TOKEN);
