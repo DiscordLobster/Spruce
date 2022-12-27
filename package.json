@@ -1,6 +1,6 @@
 {
   "name": "spruce",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "",
   "main": "node src/bot.js",
   "scripts": {
