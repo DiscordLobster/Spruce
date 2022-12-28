@@ -1,4 +1,5 @@
 require('dotenv').config();
+const wait = require('node:timers/promises').setTimeout;
 
 module.exports = {
   name: 'messageCreate',
@@ -22,9 +23,16 @@ module.exports = {
       const args = message.toString().slice(2).trim().split(/ +/);
 	    const commandName = args.shift().toLowerCase();
 
-      if (!prefixCmds.has(commandName)) return;
+      const command = prefixCmds.get(commandName) || prefixCmds.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
 
-      const command = prefixCmds.get(commandName);
+      if (!command) return;
+
+      if (command.args && args.length < 1) return message.reply({ embeds: [client.embeds.errEmbed(`Missing arguments!\n\nUsage: \`s!${command.name} ${command.usage}\``)] })
+        .then(async msg => {
+          await wait(10000);
+          await msg.delete();
+          await message.delete();
+        });
 
       try {
 

@@ -1,11 +1,13 @@
-const { PermissionFlagsBits } = require('discord.js');
+const { PermissionFlagsBits, cleanContent } = require('discord.js');
 const wait = require('node:timers/promises').setTimeout;
 
 module.exports = {
   name: 'warn',
   description: 'Warn a user',
   category: 'Moderation',
-  args: '<@user|id> <reason>',
+  aliases: ['w'],
+  args: true,
+  usage: '<userID> <reason>',
   async execute(message, args, client) {
     const { botSettings, modWarnings } =  client;
 
@@ -14,6 +16,7 @@ module.exports = {
         .then(async msg => {
           await wait(5000);
           await msg.delete();
+          await message.delete();
         });
     }
 
@@ -21,23 +24,30 @@ module.exports = {
       .then(async msg => {
         await wait(5000);
         await msg.delete();
+        await message.delete();
       });
 
     let target = args[0];
     const reason = args.slice(1).join(" ");
 
-    target = await message.guild.members.fetch(target);
-    if (!target) return message.reply({ embeds: [client.embeds.errEmbed("User could not be resolved!")] })
-    .then(async msg => {
-      await wait(5000);
-      await msg.delete();
-    });
+    try {
+      target = await message.guild.members.fetch(target);
+    }
+    catch (err) {
+      return await message.reply({ embeds: [client.embeds.errEmbed("User can't be resolved!")] })
+        .then(async msg => {
+          await wait(5000);
+          await msg.delete();
+          await message.delete();
+        });
+    }
 
     if (target.permissions.has([PermissionFlagsBits.ModerateMembers])) {
       return message.reply({ embeds: [client.embeds.errEmbed("You can't warn other staff members!")] })
       .then(async msg => {
         await wait(5000);
         await msg.delete();
+        await message.delete();
       });
     }
 
