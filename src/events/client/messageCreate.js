@@ -25,6 +25,8 @@ module.exports = {
 
       const command = prefixCmds.get(commandName) || prefixCmds.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
 
+      if (command.devOnly && message.author.id !== process.env.DEV_ID) return;
+
       if (!command) return;
 
       if (command.args && args.length < 1) return message.reply({ embeds: [client.embeds.errEmbed(`Missing arguments!\n\nUsage: \`s!${command.name} ${command.usage}\``)] })
