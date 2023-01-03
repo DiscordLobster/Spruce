@@ -113,6 +113,10 @@ module.exports = (collection) => {
     value: async (data, dataPerPage) => {
       var pages = [];
 
+      if (!data) return new Error('Invalid type provided! Accepted type(s): Array');
+      
+      //
+
       return pages;
     }
   });

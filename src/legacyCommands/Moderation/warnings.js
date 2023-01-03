@@ -1,187 +1,143 @@
-const { PermissionFlagsBits, EmbedBuilder } = require('discord.js');
-const wait = require('node:timers/promises').setTimeout;
+const { EmbedBuilder } = require('discord.js');
+const { cleanReply } = require('../../utilities/Constants');
 
 module.exports = {
   name: 'warnings',
-  description: 'View various warnings issued to users in the server',
+  description: 'View warnings within the server',
   category: 'Moderation',
   args: true,
-  usage: '[(v)iew/(e)dit/(d)elete] [all/user/warning] <id> (reason)',
+  usage: '[(v)iew/(e)dit/(d)elete] [all/(u)ser/(w)arning] [userId/warnId] [reason if edit]',
   async execute(message, args, client) {
-    const { modWarnings, botSettings } = client;
 
-    if (!message.member.permissions.has([PermissionFlagsBits.ModerateMembers])) {
-      return await message.reply({ content: 'You don\'t have permission to use this command!' })
-        .then(async msg => {
-          await wait(5000);
-          await msg.delete();
-          await message.delete();
-        });
-    }
+    // Require the Collections from the client in the file
+    const { modWarnings, botSettings, embeds } = client;
+    
+    // Make an array of acceptable arguments for args[0] (first argument)
+    const choices1 = ['view', 'v', 'edit', 'e', 'delete', 'd'];
 
-    const args1 = ['view', 'v', 'edit', 'e', 'delete', 'd'];
-    if (!args1.includes(args[0])) return await message.reply({ embeds: [client.embeds.errEmbed(`Invalid first argument!\n\n\`${args1.join(', ')}\``)] })
-      .then(async msg => {
-        await wait(10000);
-        await msg.delete();
-        await message.delete();
-      });
+    // If args[0] isn't included in the above array then it returns an error
+    if (!choices1.includes(args[0])) return await message.reply({ embeds: [embeds.errEmbed(`Invalid arguments provided! Accepted ` +
+      `first argument choices are: \`${choices1.join(', ')}\``)] })
+      .then(async msg => await cleanReply(message, msg));
 
-    if (args[0] === 'view' || args[0], 'v') {
-      const args2 = ['all', 'user', 'warning'];
-      if (!args2.includes(args[1])) return await message.reply({ embeds: [client.embeds.errEmbed(`Invalid second argument with first argument: ${args[0]}\n\n\`${args2.join(', ')}\``)] })
-        .then(async msg => {
-          await wait(10000);
-          await msg.delete();
-          await message.delete();
-        });
+    // s!warnings view
+    if (args[0] === choices1[0] || args[0] === choices1[1]) {
 
-      if (args[1] === 'all') {
+      // Make an array of acceptable arguments for args[1] (2nd argument)
+      const choices2 = ['all', 'user', 'u', 'warning', 'w'];
+
+      // if args[1] isn't included in the above array then it returns an error
+      if (!choices2.includes(args[1])) return await message.reply({ embeds: [embeds.errEmbed('Invalid arguments provided! Accepted ' +
+        `second argument choices are: \`${choices2.join(', ')}\``)] })
+        .then(async msg => await cleanReply(message, msg));
+
+      // s!warnings view all
+      if (args[1] === choices2[0]) {
+
+        // Fetch all the warnings and apply it to a variable from the modWarnings Collection properties file
         const warnings = await modWarnings.fetchAll();
-        
-        if (!warnings || warnings.length < 1) return await message.reply({ embeds: [client.embeds.errEmbed('No warnings were found!')] })
-          .then(async msg => {
-            await wait(10000);
-            await msg.delete();
-            await message.delete();
-          });
 
-        const newArray = warnings.map(key => `Case ${key.id}\nOffender: ${key.offender}\nModerator: ${key.moderator}`);
+        // If no warnings exist then return an error
+        if (!warnings) return await message.reply({ embeds: [embeds.errEmbed('No warnings were found in the database!')] })
+          .then(async msg => await cleanReply(message, msg));
 
+        // Map the warnings to a new element in a new array
+        const array = warnings.map(i => `**Case ${i.id}**\n**Offender:** <@${i.offender}> | \`${i.offender}\`\n**Moderator:** <@${i.moderator}> | \`${i.moderator}\``);
+
+        // Create an embed for the new elements
         const embed = new EmbedBuilder()
-          .setTitle(`All Warnings | ${warnings.length} Total`)
-          .setAuthor({ name: message.author.tag, iconURL: message.member.displayAvatarURL(true) })
+          .setTitle('All Warnings')
+          .setDescription(`${array.join('\n\n')}`) // Join the elements of the new array together into a single string separated by two line breaks
           .setColor(message.member.displayColor)
-          .setDescription(`${newArray.join('\n\n')}`)
-          .setFooter({ text: 'Use s!warnings view warning (id) to view more information about a warning' });
+          .setAuthor({ name: message.author.tag, iconURL: message.member.displayAvatarURL(true) });
 
+        // Return the embed as a reply to the command
         return await message.reply({ embeds: [embed], allowedMentions: { repliedUser: false } });
       }
-      else if (args[1] === 'user') {
-        const userId = args[2];
-        if (!args[2]) return await message.reply({ embeds: [client.embeds.errEmbed('No user ID was provided!')] })
-          .then(async msg => {
-            await wait(10000);
-            await msg.delete();
-            await message.delete();
-          });
+      // s!warnings view user
+      else if (args[1] === choices2[1] || args[1] === choices2[2]) {
+
+        // If no third argument is provided, return an error
+        if (!args[2]) return await message.reply({ embeds: [embeds.errEmbed('No third argument was provided! Please make sure you ' +
+          'provide a valid Discord User ID!')] })
+          .then(async msg => await cleanReply(message, msg));
         
-        const warnings = await modWarnings.fetchAllByUser(userId);
+        // Fetch all the user warnings and apply it to a variable from the modWarnings Collection properties file
+        const warnings = await modWarnings.fetchAllByUser(args[2]);
+        
+        // If no user was found or no data exists then return an error
+        if (!warnings || warnings.length < 1) return await message.reply({ embeds: [embeds.errEmbed('No warnings were found for this ID! Please make sure you ' +
+          'provided a valid Discord User ID!')] })
+          .then(async msg => await cleanReply(message, msg));
 
-        if (!warnings || warnings.length < 1) return await message.reply({ embeds: [client.embeds.errEmbed(`No warnings were found for: ${args[2]}`)] })
-          .then(async msg => {
-            await wait(10000);
-            await msg.delete();
-            await message.delete();
-          });
+        // Map the warnings to a new element in a new array
+        const array = warnings.map(i => `**Case ${i.id}**\n**Offender:** <@${i.offender}> | \`${i.offender}\`\n**Moderator:** <@${i.moderator}> | \`${i.moderator}\``);
 
-        const newArray = warnings.map(key => `Case ${key.id}\nModerator: <@${key.moderator}> | \`${key.moderator}\`\nReason: ${key.reason}`);
-
+        // Create an embed for the new elements
         const embed = new EmbedBuilder()
-          .setTitle(`User Warnings | ${warnings.length} Total`)
-          .setAuthor({ name: message.author.tag, iconURL: message.member.displayAvatarURL(true) })
+          .setTitle(`User Warnings | ${array.length} Total Warnings`)
+          .setDescription(`${array.join('\n\n')}`) // Join the elements of the new array together into a single string separated by two line breaks
           .setColor(message.member.displayColor)
-          .setDescription(`${newArray.join('\n\n')}`)
-          .setFooter({ text: 'Use s!warnings view warning (id) to view more information about a warning' });
+          .setAuthor({ name: message.author.tag, iconURL: message.member.displayAvatarURL(true) });
 
+        // Return the embed as a reply to the command
         return await message.reply({ embeds: [embed], allowedMentions: { repliedUser: false } });
       }
-      else if (args[1] === 'warning') {
-        const warnId = args[2];
-        if (!args[2]) return await message.reply({ embeds: [client.embeds.errEmbed('No warning case ID was provided!')] })
-          .then(async msg => {
-            await wait(10000);
-            await msg.delete();
-            await message.delete();
-          });
+      // s!warnings view warning
+      else if (args[1] === choices2[3] || args[1] === choices2[4]) {
+        
+        // If no third argument is provided, return an error
+        if (!args[2]) return await message.reply({ embeds: [embeds.errEmbed('No third argument was provided! Please make sure you ' +
+          'provide a valid warning case ID!')] })
+          .then(async msg => await cleanReply(message, msg));
 
-          const warning = await modWarnings.fetch(warnId);
-          if (!warning) return await message.reply({ embeds: [client.embeds.errEmbed(`No warning was found under case number: \`${args[2]}\``)] })
-            .then(async msg => {
-              await wait(10000);
-              await msg.delete();
-              await message.delete();
-            });
+        // Fetch the warning and apply it to a variable from the modWarnings Collection properties file
+        const warning = await modWarnings.fetch(args[2]);
 
-          const embed = new EmbedBuilder()
-            .setTitle(`Case ${warning.id}`)
-            .setAuthor({ name: message.author.tag, iconURL: message.member.displayAvatarURL(true) })
-            .setColor(message.member.displayColor)
-            .setDescription(`Offender: <@${warning.offender}> | \`${warning.offender}\`\n\nReason: *"${warning.reason}"*\n\nModerator: <@${warning.moderator}> | \`${warning.moderator}\``)
-            .setFooter({ text: `Created` })
-            .setTimestamp(warning.createdAt);
+        // If no warning was found, return an error
+        if (!warning) return await message.reply({ embeds: [embeds.errEmbed('No warning was found matching the provided ID!')] })
+          .then(async msg => await cleanReply(message, msg));
 
-          return await message.reply({ embeds: [embed], allowedMentions: { repliedUser: false } });
+        // Create an embed for the warning
+        const embed = new EmbedBuilder()
+          .setTitle(`Case ${warning.id}`)
+          .setAuthor({ name: message.author.tag, iconURL: message.member.displayAvatarURL(true) })
+          .setColor(message.member.displayColor)
+          .setDescription(`**Offender:** <@${warning.offender}> | \`${warning.offender}\`\n\n**Reason:** *"${warning.reason}"*\n\n**Moderator:** <@${warning.moderator}> | \`${warning.moderator}\``)
+          .setFooter({ text: 'Created at' })
+          .setTimestamp(warning.createdAt);
+
+        // Return the embed as a reply to the command
+        return await message.reply({ embeds: [embed], allowedMentions: { repliedUser: false } });
       }
     }
-    else if (args[0] === 'edit' || args[0] === 'e') {
-      const args2 = ['warning'];
-      if (!args2.includes(args[1])) return await message.reply({ embeds: [client.embeds.errEmbed(`Invalid second argument with first argument: ${args[0]}\n\n\`${args2.join(', ')}\``)] })
-        .then(async msg => {
-          await wait(10000);
-          await msg.delete();
-          await message.delete();
-        });
+    // s!warnings edit
+    else if (args[0] === choices1[2] || args[0] === choices1[3]) {
+      const choices2 = ['warning', 'w'];
 
-      if (args[1] === 'warning') {
-        const warnId = args[2];
-        const reason = args.slice(3).join(' ');
+      if (!choices2.includes(args[1])) return await message.reply({ embeds: [embeds.errEmbed('Invalid arguments provided! Accepted ' +
+        `second argument choices are: \`${choices2.join(', ')}\``)] })
+        .then(async msg => await cleanReply(message, msg));
 
-        if (!warnId) return await message.reply({ embeds: [client.embeds.errEmbed(`No warning ID was provided for your third argument!`)] })
-          .then(async msg => {
-            await wait(10000);
-            await msg.delete();
-            await message.delete();
-          });
-
-        const warning = await modWarnings.fetch(warnId);
-        if (!warning) return await message.reply({ embeds: [client.embeds.errEmbed(`No warning was found attached to ID: \`${warnId}\``)] })
-          .then(async msg => {
-            await wait(10000);
-            await msg.delete();
-            await message.delete();
-          });
-
-        if (reason.length < 1) return await message.reply({ embeds: [client.embeds.errEmbed(`No reason was provided for your fourth argument!`)] })
-          .then(async msg => {
-            await wait(10000);
-            await msg.delete();
-            await message.delete();
-          });
-
-        await modWarnings.edit(warnId, reason);
-
-        let settings = await botSettings.fetch(message.guildId);
-        if (!settings) settings = await botSettings.add(message.guildId);
-
-        const channel = botSettings.mod_logs;
-
-        const warnLogEmbed = new EmbedBuilder()
-          .setColor([254, 223, 5])
-          .setTitle(`Warning | Case ${warning.id}`)
-          .setDescription(`A warning belonging to <@${warning.offender}> | \`${warning.offender}\` has been edited by ${message.author}\n\nOld Reason: ${warning.reason}\nNew Reason: ${reason}`)
-          .setTimestamp(Date.now());
-
-        try {
-          await channel.send({ embeds: [warnLogEmbed] });
-        }
-        catch {
-          //
-        }
-
-        return await message.reply({ content: `Successfully updated reason to: ${reason}`, allowedMentions: { repliedUser: false } });
-      }
+      return await message.reply({ content: 'Selected: Edit Warning', allowedMentions: { repliedUser: false } });
     }
-    else if (args[0] === 'delete' || args[0] === 'd') {
-      const args2 = ['all', 'user', 'warning'];
-      if (!args2.includes(args[1])) return await message.reply({ embeds: [client.embeds.errEmbed(`Invalid second argument with first argument: ${args[0]}\n\n\`${args2.join(', ')}\``)] })
-        .then(async msg => {
-          await wait(10000);
-          await msg.delete();
-          await message.delete();
-        });
+    // s!warnings delete
+    else if (args[0] === choices1[4] || args[0] === choices1[5]) {
+      const choices2 = ['all', 'user', 'u', 'warning', 'w'];
 
-      //
+      if (!choices2.includes(args[1])) return await message.reply({ embeds: [embeds.errEmbed('Invalid arguments provided! Accepted ' +
+        `second argument choices are: \`${choices2.join(', ')}\``)] })
+        .then(async msg => await cleanReply(message, msg));
+
+      if (args[1] === choices2[0]) {
+        return await message.reply({ content: 'Selected: Delete All Warnings', allowedMentions: { repliedUser: false } });
+      }
+      else if (args[1] === choices2[1] || args[1] === choices2[2]) {
+        return await message.reply({ content: 'Selected: Delete User Warnings', allowedMentions: { repliedUser: false } });
+      }
+      else if (args[1] === choices2[3] || args[1] === choices2[4]) {
+        return await message.reply({ content: 'Selected: Delete Warning', allowedMentions: { repliedUser: false } });
+      }
     }
   },
 };
